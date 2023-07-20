@@ -8,16 +8,25 @@ function App() {
   const [contentInput, setContentInput] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [temporaryEditingContent, setTemporaryEditingContent] = useState(""); // TEMPORARY STATE FOR EDITING
+  const [error, setError] = useState(null);
 
   // WHEN THE APP LOADS, GET ALL MESSAGES
   useEffect(() => {
     // GET REQUEST (POLLING EVERY 1 SECOND)
     setInterval(() => {
-      fetch("http://localhost:1122/messages", {
+      fetch(`${import.meta.env.VITE_MESSAGING_API}/messages`, {
         method: "GET",
       })
-        .then((res) => res.json())
-        .then((data) => setMessages(data));
+        .then((res) => {
+          if (!res.ok) {
+            throw new Error(
+              "Soemthing went wrong wit hpolling messages request"
+            );
+          }
+          return res.json();
+        })
+        .then((data) => setMessages(data))
+        .catch((error) => setError(error.message));
     }, 1000);
   }, []);
 
@@ -34,18 +43,24 @@ function App() {
       username: usernameInput,
     };
 
-    fetch("http://localhost:1122/messages", {
+    fetch(`${import.meta.env.VITE_MESSAGING_API}/messages`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(message),
     })
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("Something wet wrong with creating message request");
+        }
+        return res.json();
+      })
       .then((newDoc) => {
         console.log("newDoc received from server", newDoc);
         setMessages([...messages, newDoc]);
-      });
+      })
+      .catch((error) => setError(error.message));
   };
 
   // PUT MESSAGE
@@ -68,14 +83,20 @@ function App() {
 
   const finishEditingAndSaveChangesInServer = () => {
     setEditingId(null);
-    fetch(`http://localhost:1122/messages/${editingId}`, {
+    fetch(`${import.meta.env.VITE_MESSAGING_API}/messages/${editingId}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ content: temporaryEditingContent }),
     })
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("Something went wrong with editing message request");
+        }
+
+        return res.json();
+      })
       .then((updatedMessageFromBackend) => {
         setMessages(
           messages.map((message) =>
@@ -87,17 +108,22 @@ function App() {
 
   // DELETE MESSAGE
   const handleDelete = (id) => {
-    fetch(`http://localhost:1122/messages/${id}`, {
+    fetch(`${import.meta.env.VITE_MESSAGING_API}/messages/${id}`, {
       method: "DELETE",
     }).then((response) => {
       if (response.ok && response.status === 204) {
         setMessages(messages.filter((message) => message.id !== id));
+      } else {
+        setError(
+          `something went wrong with deleting message${response.status} ${response.statusText}`
+        );
       }
     });
   };
 
   return (
     <>
+      {error && <h2>{error}</h2>}
       <h1>editingId: {editingId ? editingId : "null"}</h1>
       {messages
         .sort((a, b) => a.created_at - b.created_at)
