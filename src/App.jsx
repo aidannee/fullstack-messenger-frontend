@@ -129,22 +129,40 @@ function App() {
         .sort((a, b) => a.created_at - b.created_at)
         .map((message) => {
           return (
-            <div key={message.id}>
-              {message.username}:{" "}
-              {editingId === message.id ? (
-                <input
-                  value={temporaryEditingContent}
-                  onChange={(e) => setTemporaryEditingContent(e.target.value)}
-                  name="content"
-                  type="text"
-                />
-              ) : (
-                <div>{message.content}</div>
-              )}
-              <button onClick={() => handleDelete(message.id)}>🚮</button>
-              <button onClick={() => startOrFinishEditing(message.id)}>
-                🔧
-              </button>
+            <div
+              className="border border-amber-400 flex flex-row justify-between"
+              key={message.id}
+            >
+              <div className="flex flex-row">
+                <div className="mr-3 border border-lime-500 p-1">
+                  {message.username}:
+                </div>{" "}
+                {editingId === message.id ? (
+                  <input
+                    value={temporaryEditingContent}
+                    onChange={(e) => setTemporaryEditingContent(e.target.value)}
+                    name="content"
+                    type="text"
+                  />
+                ) : (
+                  <span>{message.content}</span>
+                )}
+              </div>
+              <div className="ml-3 flex flex-row">
+                {" "}
+                <button
+                  className=" mr-2 text-3xl"
+                  onClick={() => handleDelete(message.id)}
+                >
+                  🗑️
+                </button>
+                <button
+                  className=" text-3xl"
+                  onClick={() => startOrFinishEditing(message.id)}
+                >
+                  🔧
+                </button>
+              </div>
             </div>
           );
         })}
@@ -155,12 +173,14 @@ function App() {
           onChange={(e) => setUsernameInput(e.target.value)}
           name="username"
           type="text"
+          placeholder="Username"
         />
         <input
           value={contentInput}
           onChange={(e) => setContentInput(e.target.value)}
           name="content"
           type="text"
+          placeholder="Your message here"
         />
         <button type="submit">Submit</button>
       </form>
