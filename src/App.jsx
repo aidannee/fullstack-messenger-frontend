@@ -59,6 +59,7 @@ function App() {
       .then((newDoc) => {
         console.log("newDoc received from server", newDoc);
         setMessages([...messages, newDoc]);
+        setContentInput("");
       })
       .catch((error) => setError(error.message));
   };
@@ -123,18 +124,18 @@ function App() {
 
   return (
     <>
-      {error && <h2>{error}</h2>}
-      <h1>editingId: {editingId ? editingId : "null"}</h1>
+      {/* {error && <h2>{error}</h2>} */}
+      {/* <h1>editingId: {editingId ? editingId : "null"}</h1> */}
       {messages
-        .sort((a, b) => a.created_at - b.created_at)
+        .sort((a, b) => a.createdAt - b.createdAt)
         .map((message) => {
           return (
             <div
-              className="border border-amber-400 flex flex-row justify-between"
+              className="border border-amber-400 flex flex-row justify-between rounded-md p-2 m-2"
               key={message.id}
             >
-              <div className="flex flex-row">
-                <div className="mr-3 border border-lime-500 p-1">
+              <div className="flex flex-row justify-center align-middle">
+                <div className=" align-middle justify-center mr-3 border border-lime-500 rounded-md p-2 m-2">
                   {message.username}:
                 </div>{" "}
                 {editingId === message.id ? (
@@ -145,10 +146,10 @@ function App() {
                     type="text"
                   />
                 ) : (
-                  <span>{message.content}</span>
+                  <span className="rounded-md p-2 m-2">{message.content}</span>
                 )}
               </div>
-              <div className="ml-3 flex flex-row">
+              <div className="ml-3 flex flex-row border border-lime-500 rounded-md p-2 m-2">
                 {" "}
                 <button
                   className=" mr-2 text-3xl"
@@ -160,7 +161,7 @@ function App() {
                   className=" text-3xl"
                   onClick={() => startOrFinishEditing(message.id)}
                 >
-                  🔧
+                  {editingId === message.id ? "✅" : "🔧"}
                 </button>
               </div>
             </div>
@@ -168,21 +169,32 @@ function App() {
         })}
 
       <form onSubmit={handleSubmit}>
-        <input
-          value={usernameInput}
-          onChange={(e) => setUsernameInput(e.target.value)}
-          name="username"
-          type="text"
-          placeholder="Username"
-        />
-        <input
-          value={contentInput}
-          onChange={(e) => setContentInput(e.target.value)}
-          name="content"
-          type="text"
-          placeholder="Your message here"
-        />
-        <button type="submit">Submit</button>
+        <div className="flex flex-row">
+          {" "}
+          <input
+            className="w-1/3 border border-lime-500 rounded-md p-2 m-2"
+            value={usernameInput}
+            onChange={(e) => setUsernameInput(e.target.value)}
+            name="username"
+            type="text"
+            placeholder="Username"
+          />
+          <input
+            className="w-2/3 border border-lime-500 rounded-md p-2 m-2"
+            value={contentInput}
+            onChange={(e) => setContentInput(e.target.value)}
+            name="content"
+            type="text"
+            placeholder="Your message here"
+          />
+        </div>
+
+        <button
+          className="border border-lime-500 rounded-md p-2 m-2"
+          type="submit"
+        >
+          Submit
+        </button>
       </form>
     </>
   );
