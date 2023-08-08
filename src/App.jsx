@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 import "./App.css";
 
@@ -10,6 +10,7 @@ function App() {
   const [temporaryEditingContent, setTemporaryEditingContent] = useState("");
   const [error, setError] = useState(null);
   const [modePreference, setModePreference] = useState(""); // Add mode preference state
+  const messagesEndRef = useRef(null);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
@@ -27,6 +28,9 @@ function App() {
     };
   }, []);
 
+  useEffect(() => {
+    messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
   function getUsernameColor(username, modePreference) {
     const hash = Array.from(username).reduce((acc, char) => {
       return char.charCodeAt(0) + (acc << 6) + (acc << 16) - acc;
@@ -213,11 +217,15 @@ function App() {
           );
         })}
 
-      <form onSubmit={handleSubmit}>
-        <div className="flex flex-row">
-          {" "}
+      <div ref={messagesEndRef}></div>
+
+      <div className="fixed bottom-0 inset-x-0 p-4 bg-transparent">
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-col md:flex-row md:justify-between"
+        >
           <input
-            className="w-1/3 border border-lime-500 rounded-md p-2 m-2"
+            className="w-full md:w-1/3 border border-lime-500 rounded-md p-2 m-2"
             value={usernameInput}
             onChange={(e) => setUsernameInput(e.target.value)}
             name="username"
@@ -225,22 +233,23 @@ function App() {
             placeholder="Username"
           />
           <input
-            className="w-2/3 border border-lime-500 rounded-md p-2 m-2"
+            className="w-full md:w-2/3 border border-lime-500 rounded-md p-2 m-2"
             value={contentInput}
             onChange={(e) => setContentInput(e.target.value)}
             name="content"
             type="text"
             placeholder="Your message here"
           />
-        </div>
-
-        <button
-          className="border border-lime-500 rounded-md p-2 m-2"
-          type="submit"
-        >
-          Submit
-        </button>
-      </form>
+          <div className="w-full md:w-auto flex md:items-center md:justify-center">
+            <button
+              className="w-full md:w-auto border border-lime-500 rounded-md p-2 m-2"
+              type="submit"
+            >
+              Submit
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
