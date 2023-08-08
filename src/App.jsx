@@ -10,6 +10,31 @@ function App() {
   const [error, setError] = useState(null);
   const [modePreference, setModePreference] = useState(""); // Add mode preference state
   const messagesEndRef = useRef(null);
+  const [userHasScrolled, setUserHasScrolled] = useState(false);
+
+  // here will listen for user scroll wher if the user has scrolled away from the bottom, set userHasScrolled to true, and if the user has scrolled back to the bottom, set userHasScrolled to false
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const isScrolledToBottom =
+        messagesEndRef.current.getBoundingClientRect().bottom <=
+        window.innerHeight;
+
+      setUserHasScrolled(!isScrolledToBottom);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (messagesEndRef.current && !userHasScrolled) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
@@ -28,8 +53,45 @@ function App() {
   }, []);
 
   useEffect(() => {
-    messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    // GET REQUEST (POLLING EVERY 1 SECOND)
+    setInterval(() => {
+      fetch(`${import.meta.env.VITE_MESSAGING_API}/messages`, {
+        method: "GET",
+      })
+        .then((res) => {
+          if (!res.ok) {
+            throw new Error(
+              "Something went wrong with polling messages request"
+            );
+          }
+          return res.json();
+        })
+        .then((data) => {
+          const isNewMessage = messages.length < data.length;
+          setMessages(data);
+          if (isNewMessage) {
+            isNewMessageAdded.current = true;
+          }
+        })
+        .catch((error) => setError(error.message));
+    }, 1000);
+  }, []);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const initialModePreference = mediaQuery.matches ? "dark" : "light";
+    setModePreference(initialModePreference);
+
+    const listener = (event) => {
+      setModePreference(event.matches ? "dark" : "light");
+    };
+
+    mediaQuery.addEventListener("change", listener);
+
+    return () => {
+      mediaQuery.removeEventListener("change", listener);
+    };
+  }, []);
 
   function getUsernameColor(username, modePreference) {
     const hash = Array.from(username).reduce((acc, char) => {
@@ -134,61 +196,90 @@ function App() {
     });
   };
 
-  return (
-    <div className="container mx-auto p-4 mb-5">
-      <div className="messages-container">
-        {messages
-          .sort((a, b) => a.createdAt - b.createdAt)
-          .map((message) => {
-            const color = getUsernameColor(message.username, modePreference);
+  const getGroupedMessages = () => {
+    const groupedMessages = [];
 
-            return (
-              <div
-                className="border flex flex-col md:flex-row md:items-center md:justify-between rounded-md p-2 m-2"
-                key={message.id}
-                style={{
-                  borderColor: color,
-                }}
-              >
-                <div className="flex flex-row items-center mb-2 md:mb-0">
-                  <div
-                    className="mr-3 rounded-md p-2 m-2"
-                    style={{ color: color }}
-                  >
-                    {message.username}:
-                  </div>{" "}
-                  {editingId === message.id ? (
-                    <input
-                      value={temporaryEditingContent}
-                      onChange={(e) =>
-                        setTemporaryEditingContent(e.target.value)
-                      }
-                      name="content"
-                      type="text"
-                    />
-                  ) : (
-                    <span className="rounded-md p-2 m-2">
-                      {message.content}
-                    </span>
-                  )}
-                </div>
-                <div className="md:ml-3 flex flex-row border rounded-md border-lime-500 p-2 m-2">
-                  <button
-                    className="mr-2 text-3xl"
-                    onClick={() => handleDelete(message.id)}
-                  >
-                    🗑️
-                  </button>
-                  <button
-                    className="text-3xl"
-                    onClick={() => startOrFinishEditing(message.id)}
-                  >
-                    {editingId === message.id ? "✅" : "🔧"}
-                  </button>
+    messages
+      .sort((a, b) => {
+        return new Date(a.createdAt) - new Date(b.createdAt);
+      })
+      .forEach((message) => {
+        const lastGroup = groupedMessages[groupedMessages.length - 1];
+
+        if (lastGroup && lastGroup.username === message.username) {
+          lastGroup.messages.push(message);
+        } else {
+          groupedMessages.push({
+            username: message.username,
+            messages: [message],
+          });
+        }
+      });
+
+    return groupedMessages;
+  };
+
+  return (
+    <div className="container mx-auto p-4 sm:mb-10 md:mb-10 lg:mb-5">
+      <div className="messages-container">
+        {getGroupedMessages().map((group, groupIndex) => {
+          const color = getUsernameColor(group.username, modePreference);
+
+          return (
+            <div
+              className="border flex flex-col md:flex-row md:items-center md:justify-between rounded-md p-2 m-2"
+              key={groupIndex}
+              style={{
+                borderColor: color,
+              }}
+            >
+              <div className="flex flex-col md:flex-row items-center mb-2 md:mb-0">
+                <div
+                  className="mr-3 rounded-md p-2 m-2"
+                  style={{ color: color }}
+                >
+                  {group.username}:
+                </div>{" "}
+                <div className="flex flex-col">
+                  {group.messages.map((message, messageIndex) => (
+                    <div key={messageIndex} className="rounded-md p-2 m-2">
+                      {editingId === message.id ? (
+                        <input
+                          value={temporaryEditingContent}
+                          onChange={(e) =>
+                            setTemporaryEditingContent(e.target.value)
+                          }
+                          name="content"
+                          type="text"
+                        />
+                      ) : (
+                        <div>{message.content}</div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
-            );
-          })}
+              <div className="md:ml-3 flex flex-col border rounded-md border-lime-500 p-2 m-2">
+                {group.messages.map((message, messageIndex) => (
+                  <div key={messageIndex} className="flex">
+                    <button
+                      className="mr-2 text-3xl"
+                      onClick={() => handleDelete(message.id)}
+                    >
+                      🗑️
+                    </button>
+                    <button
+                      className="text-3xl"
+                      onClick={() => startOrFinishEditing(message.id)}
+                    >
+                      {editingId === message.id ? "✅" : "🔧"}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
         <div ref={messagesEndRef}></div>
       </div>
 
