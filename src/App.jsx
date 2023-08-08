@@ -7,8 +7,45 @@ function App() {
   const [usernameInput, setUsernameInput] = useState("");
   const [contentInput, setContentInput] = useState("");
   const [editingId, setEditingId] = useState(null);
-  const [temporaryEditingContent, setTemporaryEditingContent] = useState(""); // TEMPORARY STATE FOR EDITING
+  const [temporaryEditingContent, setTemporaryEditingContent] = useState("");
   const [error, setError] = useState(null);
+  const [modePreference, setModePreference] = useState(""); // Add mode preference state
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const initialModePreference = mediaQuery.matches ? "dark" : "light";
+    setModePreference(initialModePreference);
+
+    const listener = (event) => {
+      setModePreference(event.matches ? "dark" : "light");
+    };
+
+    mediaQuery.addEventListener("change", listener);
+
+    return () => {
+      mediaQuery.removeEventListener("change", listener);
+    };
+  }, []);
+
+  function getUsernameColor(username, modePreference) {
+    const hash = Array.from(username).reduce((acc, char) => {
+      return char.charCodeAt(0) + (acc << 6) + (acc << 16) - acc;
+    }, 0);
+
+    const hue = ((hash % 360) + 360) % 360; // Ensure the hue is between 0 and 359
+    const lightness =
+      modePreference === "dark"
+        ? "var(--neon-lightness)"
+        : "var(--dark-lightness)";
+    const saturation =
+      modePreference === "dark"
+        ? "var(--neon-saturation)"
+        : "var(--dark-saturation)";
+
+    const color = `hsl(${hue}, ${saturation}, ${lightness})`;
+
+    return color;
+  }
 
   // WHEN THE APP LOADS, GET ALL MESSAGES
   useEffect(() => {
@@ -123,19 +160,28 @@ function App() {
   };
 
   return (
-    <>
+    <div className="container mx-auto p-4">
       {/* {error && <h2>{error}</h2>} */}
       {/* <h1>editingId: {editingId ? editingId : "null"}</h1> */}
+
       {messages
         .sort((a, b) => a.createdAt - b.createdAt)
         .map((message) => {
+          const color = getUsernameColor(message.username, modePreference);
+
           return (
             <div
-              className="border border-amber-400 flex flex-row justify-between rounded-md p-2 m-2"
+              className="border flex flex-col md:flex-row md:items-center md:justify-between rounded-md p-2 m-2"
               key={message.id}
+              style={{
+                borderColor: color,
+              }}
             >
-              <div className="flex flex-row justify-center align-middle">
-                <div className=" align-middle justify-center mr-3 border border-lime-500 rounded-md p-2 m-2">
+              <div className="flex flex-row items-center mb-2 md:mb-0">
+                <div
+                  className="mr-3 rounded-md p-2 m-2"
+                  style={{ color: color }}
+                >
                   {message.username}:
                 </div>{" "}
                 {editingId === message.id ? (
@@ -149,16 +195,15 @@ function App() {
                   <span className="rounded-md p-2 m-2">{message.content}</span>
                 )}
               </div>
-              <div className="ml-3 flex flex-row border border-lime-500 rounded-md p-2 m-2">
-                {" "}
+              <div className="md:ml-3 flex flex-row border rounded-md border-lime-500 p-2 m-2">
                 <button
-                  className=" mr-2 text-3xl"
+                  className="mr-2 text-3xl"
                   onClick={() => handleDelete(message.id)}
                 >
                   🗑️
                 </button>
                 <button
-                  className=" text-3xl"
+                  className="text-3xl"
                   onClick={() => startOrFinishEditing(message.id)}
                 >
                   {editingId === message.id ? "✅" : "🔧"}
@@ -196,7 +241,7 @@ function App() {
           Submit
         </button>
       </form>
-    </>
+    </div>
   );
 }
 

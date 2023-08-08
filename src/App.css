@@ -8,3 +8,10 @@
   padding: 2rem;
   text-align: center;
 }
+
+:root {
+  --neon-lightness: 80%;
+  --neon-saturation: 100%;
+  --dark-lightness: 40%;
+  --dark-saturation: 70%;
+}
