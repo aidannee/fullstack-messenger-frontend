@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-
 import "./App.css";
 
 function App() {
@@ -31,6 +30,7 @@ function App() {
   useEffect(() => {
     messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
   function getUsernameColor(username, modePreference) {
     const hash = Array.from(username).reduce((acc, char) => {
       return char.charCodeAt(0) + (acc << 6) + (acc << 16) - acc;
@@ -51,31 +51,6 @@ function App() {
     return color;
   }
 
-  // WHEN THE APP LOADS, GET ALL MESSAGES
-  useEffect(() => {
-    // GET REQUEST (POLLING EVERY 1 SECOND)
-    setInterval(() => {
-      fetch(`${import.meta.env.VITE_MESSAGING_API}/messages`, {
-        method: "GET",
-      })
-        .then((res) => {
-          if (!res.ok) {
-            throw new Error(
-              "Soemthing went wrong wit hpolling messages request"
-            );
-          }
-          return res.json();
-        })
-        .then((data) => setMessages(data))
-        .catch((error) => setError(error.message));
-    }, 1000);
-  }, []);
-
-  // useEffect(() => {
-  //   // console.log(messages);
-  // }, [messages]);
-
-  // CREATE MESSAGE
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -93,7 +68,7 @@ function App() {
     })
       .then((res) => {
         if (!res.ok) {
-          throw new Error("Something wet wrong with creating message request");
+          throw new Error("Something went wrong with creating message request");
         }
         return res.json();
       })
@@ -105,9 +80,6 @@ function App() {
       .catch((error) => setError(error.message));
   };
 
-  // PUT MESSAGE
-
-  // PUT MESSAGE
   const startOrFinishEditing = (id) => {
     if (editingId === id) {
       finishEditingAndSaveChangesInServer();
@@ -148,7 +120,6 @@ function App() {
       });
   };
 
-  // DELETE MESSAGE
   const handleDelete = (id) => {
     fetch(`${import.meta.env.VITE_MESSAGING_API}/messages/${id}`, {
       method: "DELETE",
@@ -157,7 +128,7 @@ function App() {
         setMessages(messages.filter((message) => message.id !== id));
       } else {
         setError(
-          `something went wrong with deleting message${response.status} ${response.statusText}`
+          `Something went wrong with deleting message${response.status} ${response.statusText}`
         );
       }
     });
@@ -165,59 +136,61 @@ function App() {
 
   return (
     <div className="container mx-auto p-4">
-      {/* {error && <h2>{error}</h2>} */}
-      {/* <h1>editingId: {editingId ? editingId : "null"}</h1> */}
+      <div className="messages-container">
+        {messages
+          .sort((a, b) => a.createdAt - b.createdAt)
+          .map((message) => {
+            const color = getUsernameColor(message.username, modePreference);
 
-      {messages
-        .sort((a, b) => a.createdAt - b.createdAt)
-        .map((message) => {
-          const color = getUsernameColor(message.username, modePreference);
-
-          return (
-            <div
-              className="border flex flex-col md:flex-row md:items-center md:justify-between rounded-md p-2 m-2"
-              key={message.id}
-              style={{
-                borderColor: color,
-              }}
-            >
-              <div className="flex flex-row items-center mb-2 md:mb-0">
-                <div
-                  className="mr-3 rounded-md p-2 m-2"
-                  style={{ color: color }}
-                >
-                  {message.username}:
-                </div>{" "}
-                {editingId === message.id ? (
-                  <input
-                    value={temporaryEditingContent}
-                    onChange={(e) => setTemporaryEditingContent(e.target.value)}
-                    name="content"
-                    type="text"
-                  />
-                ) : (
-                  <span className="rounded-md p-2 m-2">{message.content}</span>
-                )}
+            return (
+              <div
+                className="border flex flex-col md:flex-row md:items-center md:justify-between rounded-md p-2 m-2"
+                key={message.id}
+                style={{
+                  borderColor: color,
+                }}
+              >
+                <div className="flex flex-row items-center mb-2 md:mb-0">
+                  <div
+                    className="mr-3 rounded-md p-2 m-2"
+                    style={{ color: color }}
+                  >
+                    {message.username}:
+                  </div>{" "}
+                  {editingId === message.id ? (
+                    <input
+                      value={temporaryEditingContent}
+                      onChange={(e) =>
+                        setTemporaryEditingContent(e.target.value)
+                      }
+                      name="content"
+                      type="text"
+                    />
+                  ) : (
+                    <span className="rounded-md p-2 m-2">
+                      {message.content}
+                    </span>
+                  )}
+                </div>
+                <div className="md:ml-3 flex flex-row border rounded-md border-lime-500 p-2 m-2">
+                  <button
+                    className="mr-2 text-3xl"
+                    onClick={() => handleDelete(message.id)}
+                  >
+                    🗑️
+                  </button>
+                  <button
+                    className="text-3xl"
+                    onClick={() => startOrFinishEditing(message.id)}
+                  >
+                    {editingId === message.id ? "✅" : "🔧"}
+                  </button>
+                </div>
               </div>
-              <div className="md:ml-3 flex flex-row border rounded-md border-lime-500 p-2 m-2">
-                <button
-                  className="mr-2 text-3xl"
-                  onClick={() => handleDelete(message.id)}
-                >
-                  🗑️
-                </button>
-                <button
-                  className="text-3xl"
-                  onClick={() => startOrFinishEditing(message.id)}
-                >
-                  {editingId === message.id ? "✅" : "🔧"}
-                </button>
-              </div>
-            </div>
-          );
-        })}
-
-      <div ref={messagesEndRef}></div>
+            );
+          })}
+        <div ref={messagesEndRef}></div>
+      </div>
 
       <div className="fixed bottom-0 inset-x-0 p-4 bg-transparent">
         <form
