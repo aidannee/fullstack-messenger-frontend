@@ -220,31 +220,34 @@ function App() {
   };
 
   return (
-    <div className="container mx-auto p-4 sm:mb-10 md:mb-10 lg:mb-5">
+    <div className="container mx-auto p-4 mb-32 md:mb-6 lg:mb-6 md:w-[75vw] lg:w-[75vw]">
       <div className="messages-container">
         {getGroupedMessages().map((group, groupIndex) => {
           const color = getUsernameColor(group.username, modePreference);
 
           return (
             <div
-              className="border flex flex-col md:flex-row md:items-center md:justify-between rounded-md p-2 m-2"
-              key={groupIndex}
+              className="border-4 flex flex-col items-center justify-between rounded-md p-2 m-2"
               style={{
                 borderColor: color,
               }}
             >
-              <div className="flex flex-col md:flex-row items-center mb-2 md:mb-0">
-                <div
-                  className="mr-3 rounded-md p-2 m-2"
-                  style={{ color: color }}
-                >
+              <div>
+                <div className="m-1 font-bold" style={{ color: color }}>
                   {group.username}:
                 </div>{" "}
-                <div className="flex flex-col">
-                  {group.messages.map((message, messageIndex) => (
-                    <div key={messageIndex} className="rounded-md p-2 m-2">
+              </div>
+              <div
+                key={groupIndex}
+                className="flex flex-col items-center  w-full group"
+              >
+                {group.messages.map((message, messageIndex) => (
+                  <div className="flex flex-row">
+                    {" "}
+                    <div key={messageIndex} className="flex rounded-md p-2">
                       {editingId === message.id ? (
-                        <input
+                        <textarea
+                          className=""
                           value={temporaryEditingContent}
                           onChange={(e) =>
                             setTemporaryEditingContent(e.target.value)
@@ -253,27 +256,25 @@ function App() {
                           type="text"
                         />
                       ) : (
-                        <div>{message.content}</div>
+                        <div className="w-full">{message.content}</div>
                       )}
                     </div>
-                  ))}
-                </div>
-              </div>
-              <div className="md:ml-3 flex flex-col border rounded-md border-lime-500 p-2 m-2">
-                {group.messages.map((message, messageIndex) => (
-                  <div key={messageIndex} className="flex">
-                    <button
-                      className="mr-2 text-3xl"
-                      onClick={() => handleDelete(message.id)}
-                    >
-                      🗑️
-                    </button>
-                    <button
-                      className="text-3xl"
-                      onClick={() => startOrFinishEditing(message.id)}
-                    >
-                      {editingId === message.id ? "✅" : "🔧"}
-                    </button>
+                    <div className="self-center transition-opacity opacity-0 group-hover:opacity-100">
+                      <div key={messageIndex} className="flex">
+                        <button
+                          className="mr-2 text-2xl"
+                          onClick={() => handleDelete(message.id)}
+                        >
+                          🗑️
+                        </button>
+                        <button
+                          className="text-2xl"
+                          onClick={() => startOrFinishEditing(message.id)}
+                        >
+                          {editingId === message.id ? "✅" : "🔧"}
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -289,7 +290,7 @@ function App() {
           className="flex flex-col md:flex-row md:justify-between"
         >
           <input
-            className="w-full md:w-1/3 border border-lime-500 rounded-md p-2 m-2"
+            className="lg:w-full md:w-1/3 border border-lime-500 rounded-md p-2 m-1"
             value={usernameInput}
             onChange={(e) => setUsernameInput(e.target.value)}
             name="username"
@@ -297,7 +298,7 @@ function App() {
             placeholder="Username"
           />
           <input
-            className="w-full md:w-2/3 border border-lime-500 rounded-md p-2 m-2"
+            className=" lg:w-full md:w-2/3 sm:w-1/2 border border-lime-500 rounded-md p-2 m-1"
             value={contentInput}
             onChange={(e) => setContentInput(e.target.value)}
             name="content"
@@ -306,7 +307,8 @@ function App() {
           />
           <div className="w-full md:w-auto flex md:items-center md:justify-center">
             <button
-              className="w-full md:w-auto border border-lime-500 rounded-md p-2 m-2"
+              id="submitButton"
+              className="w-full md:w-auto border border-lime-500 rounded-md p-2 m-1"
               type="submit"
             >
               Submit
