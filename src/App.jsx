@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import "./App.css";
+import * as linkify from "linkifyjs";
+import linkifyHtml from "linkify-html";
 
 function App() {
   const [messages, setMessages] = useState([]);
@@ -13,6 +15,7 @@ function App() {
   const [userHasScrolled, setUserHasScrolled] = useState(false);
 
   // here will listen for user scroll wher if the user has scrolled away from the bottom, set userHasScrolled to true, and if the user has scrolled back to the bottom, set userHasScrolled to false
+  const options = { defaultProtocol: "https" };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -239,43 +242,53 @@ function App() {
               </div>
               <div
                 key={groupIndex}
-                className="flex flex-col items-center  w-full group"
+                className="flex flex-col items-center min-w-full max-w-full "
               >
                 {group.messages.map((message, messageIndex) => (
-                  <div className="flex flex-row">
-                    {" "}
-                    <div key={messageIndex} className="flex rounded-md p-2">
-                      {editingId === message.id ? (
-                        <textarea
-                          className=""
-                          value={temporaryEditingContent}
-                          onChange={(e) =>
-                            setTemporaryEditingContent(e.target.value)
-                          }
-                          name="content"
-                          type="text"
-                        />
-                      ) : (
-                        <div className="w-full">{message.content}</div>
-                      )}
-                    </div>
-                    <div className="self-center transition-opacity opacity-0 group-hover:opacity-100">
-                      <div key={messageIndex} className="flex">
-                        <button
-                          className="mr-2 text-2xl"
-                          onClick={() => handleDelete(message.id)}
-                        >
-                          🗑️
-                        </button>
-                        <button
-                          className="text-2xl"
-                          onClick={() => startOrFinishEditing(message.id)}
-                        >
-                          {editingId === message.id ? "✅" : "🔧"}
-                        </button>
+                  <>
+                    <div className="flex flex-col items-center w-full group">
+                      {" "}
+                      <div
+                        key={messageIndex}
+                        className="flex rounded-md w-full text-center"
+                      >
+                        {editingId === message.id ? (
+                          <textarea
+                            className="flex-1"
+                            value={temporaryEditingContent}
+                            onChange={(e) =>
+                              setTemporaryEditingContent(e.target.value)
+                            }
+                            name="content"
+                            type="text"
+                          />
+                        ) : (
+                          <div
+                            dangerouslySetInnerHTML={{
+                              __html: linkifyHtml(message.content, options),
+                            }}
+                            className="w-full break-all"
+                          ></div>
+                        )}
+                      </div>
+                      <div className="self-center transition-opacity opacity-0 group-hover:opacity-100">
+                        <div key={messageIndex} className="flex">
+                          <button
+                            className="mr-2 text-s"
+                            onClick={() => handleDelete(message.id)}
+                          >
+                            🗑️
+                          </button>
+                          <button
+                            className="text-s"
+                            onClick={() => startOrFinishEditing(message.id)}
+                          >
+                            {editingId === message.id ? "✅" : "🔧"}
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  </>
                 ))}
               </div>
             </div>
@@ -290,7 +303,7 @@ function App() {
           className="flex flex-col md:flex-row md:justify-between"
         >
           <input
-            className="lg:w-full md:w-1/3 border border-lime-500 rounded-md p-2 m-1"
+            className="lg:w-1/4 md:w-1/3 border border-lime-500 rounded-md p-2 m-1"
             value={usernameInput}
             onChange={(e) => setUsernameInput(e.target.value)}
             name="username"
@@ -298,7 +311,7 @@ function App() {
             placeholder="Username"
           />
           <input
-            className=" lg:w-full md:w-2/3 sm:w-1/2 border border-lime-500 rounded-md p-2 m-1"
+            className="lg:w-3/4 md:w-2/3 border border-lime-500 rounded-md p-2 m-1"
             value={contentInput}
             onChange={(e) => setContentInput(e.target.value)}
             name="content"
