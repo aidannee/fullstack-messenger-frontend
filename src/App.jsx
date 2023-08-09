@@ -274,13 +274,13 @@ function App() {
                       <div className="self-center transition-opacity opacity-0 group-hover:opacity-100">
                         <div key={messageIndex} className="flex">
                           <button
-                            className="mr-2 text-s"
+                            className="mr-2 text-3xl lg:text-lg"
                             onClick={() => handleDelete(message.id)}
                           >
                             🗑️
                           </button>
                           <button
-                            className="text-s"
+                            className="text-3xl lg:text-lg"
                             onClick={() => startOrFinishEditing(message.id)}
                           >
                             {editingId === message.id ? "✅" : "🔧"}
