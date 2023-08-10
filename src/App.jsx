@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import "./App.css";
 import * as linkify from "linkifyjs";
 import linkifyHtml from "linkify-html";
+import Message from "./models/Message";
 
 function App() {
   const [messages, setMessages] = useState([]);
@@ -119,30 +120,7 @@ function App() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    const message = {
-      content: contentInput,
-      username: usernameInput,
-    };
-
-    fetch(`${import.meta.env.VITE_MESSAGING_API}/messages`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(message),
-    })
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error("Something went wrong with creating message request");
-        }
-        return res.json();
-      })
-      .then((newDoc) => {
-        console.log("newDoc received from server", newDoc);
-        setMessages([...messages, newDoc]);
-        setContentInput("");
-      })
-      .catch((error) => setError(error.message));
+    createMessage();
   };
 
   const startOrFinishEditing = (id) => {
