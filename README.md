@@ -1,5 +1,5 @@
 # fullstack-messenger-frontend
-<img src="https://unsplash.com/photos/k1bO_VTiZSs](https://unsplash.com/photos/k1bO_VTiZSs"></img>
+<img src="https://unsplash.com/photos/k1bO_VTiZSs"></img>
 
 Welcome to my first messenger!
 
