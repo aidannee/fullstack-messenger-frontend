@@ -67,19 +67,6 @@ To run this project locally, follow these steps:
 
 5. Open your browser and navigate to `http://localhost:3000` to view the application.
 
-## Additional Information
-
-- The frontend code can be found in the `frontend` directory.
-- The backend code can be found in the `backend` directory.
-- The backend uses Sequelize ORM with PostgreSQL. Make sure to set up the database schema accordingly.
-
-## Acknowledgments
-
-This project is based on the following technologies and resources:
-- React: [Link to React Docs](https://reactjs.org/docs/getting-started.html)
-- Tailwind CSS: [Link to Tailwind CSS Docs](https://tailwindcss.com/docs)
-- Express: [Link to Express Docs](https://expressjs.com/)
-- Sequelize: [Link to Sequelize Docs](https://sequelize.org/)
 
 Feel free to contribute or suggest improvements by creating issues or pull requests.
 
